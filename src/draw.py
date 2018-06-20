@@ -9,14 +9,12 @@ from graph import *
 
 graph_data = Graph()
 graph_data.debug_create_test_data()
-print(graph_data.vertexes)
 
-N = 10
+N = len(graph_data.vertexes)
 node_indices = list(range(N))
 
-debug_pallete = Spectral8
-debug_pallete.append('#ff0000')
-debug_pallete.append('#0000ff')
+# populate the list of colors from the property on each vertex
+color_list = [v.color for v in graph_data.vertexes]
 
 plot = figure(
     title="Graph Layout Demonstration",
@@ -29,15 +27,27 @@ plot = figure(
 graph = GraphRenderer()
 
 graph.node_renderer.data_source.add(node_indices, "index")
-graph.node_renderer.data_source.add(debug_pallete, "color")
-graph.node_renderer.glyph = Oval(height=10, width=10, fill_color="color")
+graph.node_renderer.data_source.add(color_list, "color")
+graph.node_renderer.glyph = Oval(height=30, width=30, fill_color="color")
 
-graph.edge_renderer.data_source.data = dict(start=[0] * N, end=node_indices)
+
+# this is drawing the edges from start to end
+graph.edge_renderer.data_source.data = dict(start=[], end=[])
+for v in graph_data.vertexes:
+    if len(v.edges) > 0:
+        for e in v.edges:
+            self_index = graph_data.vertexes.index(v)
+            graph.edge_renderer.data_source.data['start'].append(self_index)
+
+            dest_index = graph_data.vertexes.index(e.destination)
+            graph.edge_renderer.data_source.data['end'].append(dest_index)
+
 
 # start of layout code
-circ = [i * 2 * math.pi / N for i in node_indices]
-x = [math.cos(i) for i in circ]
-y = [math.sin(i) for i in circ]
+# this is setting the positions of the vertexes
+x = [v.pos["x"] for v in graph_data.vertexes]
+y = [v.pos["y"] for v in graph_data.vertexes]
+
 
 graph_layout = dict(zip(node_indices, zip(x, y)))
 graph.layout_provider = StaticLayoutProvider(graph_layout=graph_layout)
