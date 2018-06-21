@@ -24,7 +24,7 @@ node_indices = list(range(N))
 color_list = [v.color for v in graph_data.vertexes]
 
 plot = figure(
-    title="Graph Layout Demonstration",
+    title="Python-Bokeh Graph project with CS8",
     x_range=(0, 500),
     y_range=(0, 500),
     tools="",
@@ -39,25 +39,26 @@ graph.node_renderer.glyph = Oval(height=30, width=30, fill_color="color")
 
 
 # this is drawing the edges from start to end
-graph.edge_renderer.data_source.data = dict(start=[], end=[])
+start_indexes = []
+end_indexes = []
 
 for v in graph_data.vertexes:
-    if len(v.edges) > 0:
-        for e in v.edges:
-            self_index = graph_data.vertexes.index(v)
-            graph.edge_renderer.data_source.data["start"].append(self_index)
+    for e in v.edges:
+        self_index = graph_data.vertexes.index(v)
+        start_indexes.append(self_index)
 
-            dest_index = graph_data.vertexes.index(e.destination)
-            graph.edge_renderer.data_source.data["end"].append(dest_index)
+        dest_index = graph_data.vertexes.index(e.destination)
+        end_indexes.append(dest_index)
 
+graph.edge_renderer.data_source.data = dict(start=start_indexes, end=end_indexes)
 
-# start of layout code
 # this is setting the positions of the vertexes
 x = [v.pos["x"] for v in graph_data.vertexes]
 y = [v.pos["y"] for v in graph_data.vertexes]
+names = [v.value for v in graph_data.vertexes]
 
 # draw labels
-label_data = dict(x=x, y=y, names=[v.value for v in graph_data.vertexes])
+label_data = dict(x=x, y=y, names=names)
 source = ColumnDataSource(data=label_data)
 labels = LabelSet(
     x="x",
@@ -70,11 +71,13 @@ labels = LabelSet(
     render_mode="canvas",
 )
 
+# start of layout code
+plot.add_layout(labels)
+
 graph_layout = dict(zip(node_indices, zip(x, y)))
 graph.layout_provider = StaticLayoutProvider(graph_layout=graph_layout)
 
 plot.renderers.append(graph)
-plot.renderers.append(labels)
 
 output_file("graph.html")
 show(plot)
