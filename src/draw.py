@@ -6,13 +6,17 @@ from bokeh.palettes import Spectral8
 from bokeh.models import (
     GraphRenderer,
     StaticLayoutProvider,
-    Oval,
+    Circle,
     ColumnDataSource,
     LabelSet,
     Label,
 )
 
 from graph import *
+
+WIDTH = 640
+HEIGHT = 480
+CIRCLE_SIZE = 30
 
 graph_data = Graph()
 graph_data.debug_create_test_data()
@@ -25,17 +29,19 @@ color_list = [v.color for v in graph_data.vertexes]
 
 plot = figure(
     title="Python-Bokeh Graph project with CS8",
-    x_range=(0, 500),
-    y_range=(0, 500),
+    x_range=(0, WIDTH),
+    y_range=(0, HEIGHT),
     tools="",
     toolbar_location=None,
+    plot_width=WIDTH,
+    plot_height=HEIGHT
 )
 
 graph = GraphRenderer()
 
 graph.node_renderer.data_source.add(node_indices, "index")
 graph.node_renderer.data_source.add(color_list, "color")
-graph.node_renderer.glyph = Oval(height=30, width=30, fill_color="color")
+graph.node_renderer.glyph = Circle(size=CIRCLE_SIZE, fill_color="color")
 
 
 # this is drawing the edges from start to end
@@ -64,19 +70,21 @@ labels = LabelSet(
     x="x",
     y="y",
     x_offset=-7,
-    y_offset=-40,
+    # y_offset=-40,
+    text_baseline="middle",
+    text_color="white",
     text="names",
-    level="glyph",
+    level="overlay",
     source=source,
     render_mode="canvas",
 )
 
 # start of layout code
-plot.add_layout(labels)
 
 graph_layout = dict(zip(node_indices, zip(x, y)))
 graph.layout_provider = StaticLayoutProvider(graph_layout=graph_layout)
 
+plot.add_layout(labels)
 plot.renderers.append(graph)
 
 output_file("graph.html")
